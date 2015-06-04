@@ -23,22 +23,11 @@ using namespace std;
 /*
  * 
  */
-int communicationNetwork();
-int communicationUSB();
+void receiveMSG(int socket_udp, uint8_t buf[BUFSIZE] );
+int connectServer();
 
 
 int main(int argc, char** argv) {
-    int comm;
-    while(comm != 3){
-        cout << "Type 1 for Network communication." << endl << "Type 2 for USB communication." << endl;
-        cout << "Type 3 for exit" << endl;
-        cin >> comm;
-        if (comm == 1){
-            communicationNetwork();
-            }else{
-                communicationUSB();     
-                }
-    }
     return 0;
 }
 
@@ -46,15 +35,13 @@ int communicationUSB(){
     cout << "USB Communication not ready." << endl;
 };
 
-int communicationNetwork(){
+int connectServer(){
     int socket_udp; /*Our socket*/
-    ssize_t receive; /*# bytes received*/
 
     uint8_t buf[BUFSIZE]; /* receive buffer */
     struct sockaddr_in server_addr, remote_addr; /* Server Address*/
     socklen_t addrlen = sizeof(remote_addr); /* length of addresses */
     uint64_t payload = 0;
-    unsigned int temp = 0;
     
     socket_udp = socket(AF_INET, SOCK_DGRAM,0); /*Create socket udp*/
     
@@ -75,10 +62,15 @@ int communicationNetwork(){
         return 2;
     }
     
-    cout << "waiting on port " << serverPort << "\n"; 
-  
-   /*Waiting for messages*/ 
-        memset(buf, 0, BUFSIZE);
+    cout << "waiting on port " << serverPort << "\n";       
+}
+
+void receiveMSG(int socket_udp, uint8_t buf[BUFSIZE] ){
+    ssize_t receive; /*# bytes received*/
+    unsigned int temp = 0;
+    
+    /*Waiting for messages*/ 
+    memset(buf, 0, BUFSIZE);
     while(true){
   
         receive = recvfrom(socket_udp, buf, BUFSIZE, 0, NULL, NULL); 
@@ -107,5 +99,4 @@ int communicationNetwork(){
 		
         }
     }
-    
 }
