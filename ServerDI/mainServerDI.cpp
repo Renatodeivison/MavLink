@@ -23,9 +23,6 @@ using namespace std;
 /*
  * 
  */
-void receiveMSG(int socket_udp, uint8_t buf[BUFSIZE] );
-int connectServer();
-
 
 int main(int argc, char** argv) {
     return 0;
@@ -35,8 +32,9 @@ int communicationUSB(){
     cout << "USB Communication not ready." << endl;
 };
 
-int connectServer(){
+int connectServerSocket(){
     int socket_udp; /*Our socket*/
+    ssize_t receive; /*# bytes received*/  
 
     uint8_t buf[BUFSIZE]; /* receive buffer */
     struct sockaddr_in server_addr, remote_addr; /* Server Address*/
@@ -62,19 +60,19 @@ int connectServer(){
         return 2;
     }
     
-    cout << "waiting on port " << serverPort << "\n";       
+    cout << "waiting on port " << serverPort << "\n";
+    
+   /*Waiting for messages*/ 
+    memset(buf, 0, BUFSIZE);
+    
+    while(true)
+    {
+        receive = recvfrom(socket_udp, buf, BUFSIZE, 0, NULL, NULL);
+    }    
 }
 
-void receiveMSG(int socket_udp, uint8_t buf[BUFSIZE] ){
-    ssize_t receive; /*# bytes received*/
-    unsigned int temp = 0;
-    
-    /*Waiting for messages*/ 
-    memset(buf, 0, BUFSIZE);
-    while(true){
-  
-        receive = recvfrom(socket_udp, buf, BUFSIZE, 0, NULL, NULL); 
-
+void translateMSG(ssize_t receive, uint8_t buf[BUFSIZE] ){
+        unsigned int temp = 0;
         
         if (receive > 0)
       	{
@@ -98,5 +96,4 @@ void receiveMSG(int socket_udp, uint8_t buf[BUFSIZE] ){
                 sleep(1); // Sleep one second
 		
         }
-    }
 }
