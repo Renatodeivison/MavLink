@@ -19,7 +19,7 @@ int main(int argc, char** argv) {
     
     
     struct sockaddr_in server_addr, client_addr;
-   
+    
     // Setting the socket using UDP(SOCK_DGRAM) 
     socket_udp = socket(AF_INET, SOCK_DGRAM, 0); 
     
@@ -33,8 +33,8 @@ int main(int argc, char** argv) {
     server_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons( ServerPort );
-   
-  
+    
+    
     //send message
     message = "Hi";
     

@@ -54,12 +54,12 @@ int main(int argc, char** argv) {
     configure_port(fd);
     
     while(true){
-    if(fd > 0){
-        receiveMsgUSB(fd);
+        if(fd > 0){
+            receiveMsgUSB(fd);
+        };
+        
+        receiveMSG();
     };
-    
-    receiveMSG();
-};
     return 0;
 }
 
@@ -92,90 +92,90 @@ int connectServerSocket(){
     }
     
     cout << "waiting on port " << serverPort << "\n";
-   
+    
 }
 
 void translateMSG(ssize_t){
-        unsigned int temp = 0;
-        
-			// Something received - print out all bytes and parse packet
-			mavlink_message_t msg;
-			mavlink_status_t status;
-			
-			cout << "Bytes Received: " << (int)receive << "\nDatagram:\n";
-			for (int i = 0; i < receive; ++i)
-			{
-				temp = buf[i];
-				printf("%02x ", (unsigned char)temp);
-				if (mavlink_parse_char(MAVLINK_COMM_0, buf[i], &msg, &status))
-				{
-					// Packet received
-					printf("\nReceived packet: SYS: %u, COMP: %u, LEN: %u, MSG ID: %u", msg.sysid, msg.compid, msg.len, msg.msgid);
-                                        cout << " Payload: " << msg.payload64 << " \n\n";
-                                }    
-			}
-   
+    unsigned int temp = 0;
+    
+    // Something received - print out all bytes and parse packet
+    mavlink_message_t msg;
+    mavlink_status_t status;
+    
+    cout << "Bytes Received: " << (int)receive << "\nDatagram:\n";
+    for (int i = 0; i < receive; ++i)
+    {
+        temp = buf[i];
+        printf("%02x ", (unsigned char)temp);
+        if (mavlink_parse_char(MAVLINK_COMM_0, buf[i], &msg, &status))
+        {
+            // Packet received
+            printf("\nReceived packet: SYS: %u, COMP: %u, LEN: %u, MSG ID: %u", msg.sysid, msg.compid, msg.len, msg.msgid);
+            cout << " Payload: " << msg.payload64 << " \n\n";
+        }    
+    }
+    
 }
 
 void receiveMSG(){
     while(1)
     {
-            memset(buf, 0, BUFSIZE);   
-            sleep(1); // Sleep one second 
-
-            receive = recvfrom(socket_udp, buf, BUFSIZE, 0, NULL, NULL);
-            if (receive > 0)
-            {
-                translateMSG(receive);
-            }
-            
+        memset(buf, 0, BUFSIZE);   
+        sleep(1); // Sleep one second 
+        
+        receive = recvfrom(socket_udp, buf, BUFSIZE, 0, NULL, NULL);
+        if (receive > 0)
+        {
+            translateMSG(receive);
+        }
+        
     }
 };
 
 void receiveMsgUSB(int fd){
     while(true)
     {
-            memset(buf, 0, BUFSIZE);   
-            //sleep(1); // Sleep one second 
-            
-            receive = read(fd, &buf, 283);  //read data
-            if (receive > 0)
-            {
-                translateMSG(receive);
-            }          
-           
+        memset(buf, 0, BUFSIZE);   
+        //sleep(1); // Sleep one second 
+        
+        receive = read(fd, &buf, 283);  //read data
+        if (receive > 0)
+        {
+            translateMSG(receive);
+        }          
+        
     }
 };
 
 int open_port(void){
-	int fd; // file description for the serial port
-        fd = open("/dev/ttyUSB0", O_RDWR);
-        struct flock fl;
+    int fd; // file description for the serial port
+    fd = open("/dev/ttyUSB0", O_RDWR);
+    struct flock fl;
+    
+    if(fd == -1){ // if open is unsucessfulgt
+        printf("\n pen_port: Unable to open /dev/ttyUSB3. \n");
+        return -1;
+    }else{
+        fl.l_type = F_RDLCK;
+        fl.l_whence = SEEK_SET;
+        fl.l_start = 0;
+        fl.l_len = 283;
         
-	if(fd == -1){ // if open is unsucessfulgt
-		printf("\n pen_port: Unable to open /dev/ttyUSB3. \n");
-                return -1;
-	}else{
-                fl.l_type = F_RDLCK;
-                fl.l_whence = SEEK_SET;
-                fl.l_start = 0;
-                fl.l_len = 283;
-                
-		if (fcntl(fd, F_SETLK, &fl) == -1) printf("Error");
-                      
-		printf("port is open USB 2.\n");
-	}	
-	return(fd);
+        if (fcntl(fd, F_SETLK, &fl) == -1) printf("Error");
+        
+        printf("port is open USB 2.\n");
+    }	
+    return(fd);
 }
 
 int configure_port(int fd){      // configure the port
-	struct termios port_settings;      // structure to store the port settings in
-	cfsetispeed(&port_settings, B57600);    // set baud rates
-	cfsetospeed(&port_settings, B57600);
-	port_settings.c_cflag &= ~CSTOPB;
-	port_settings.c_cflag &= ~CSIZE;
-        port_settings.c_cflag &= ~CREAD;
-	port_settings.c_cflag &= CS8;	
-	tcsetattr(fd, TCSANOW, &port_settings);    // apply the settings to the port
-	return(fd);
+    struct termios port_settings;      // structure to store the port settings in
+    cfsetispeed(&port_settings, B57600);    // set baud rates
+    cfsetospeed(&port_settings, B57600);
+    port_settings.c_cflag &= ~CSTOPB;
+    port_settings.c_cflag &= ~CSIZE;
+    port_settings.c_cflag &= ~CREAD;
+    port_settings.c_cflag &= CS8;	
+    tcsetattr(fd, TCSANOW, &port_settings);    // apply the settings to the port
+    return(fd);
 } //configure_port
