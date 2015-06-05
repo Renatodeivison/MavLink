@@ -15,6 +15,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+
 #include <fcntl.h> // File control definitions
 #include <unistd.h> // UNIX standard function definitions
 #include <termios.h> // POSIX terminal control definitionss
@@ -31,6 +32,7 @@ int connectServerSocket();
 void translateMSG();
 void receiveMSG();
 int open_port(void);
+
 uint8_t* query_modem(int);
 int configure_port(int);
 int count(int);
